@@ -31,8 +31,11 @@ class PokerTable:
 
     def __repr__(self):
         # WARNING: treys.Deck() has no __repr__, prints out location in memory
-        return "PokerTable({})".format(self.cfg)
-   
+        # Returns PokerTable with cfg minus "deck" key
+        temp_cfg = dict(self.cfg)
+        temp_cfg.pop("deck")
+        return "PokerTable({})".format(temp_cfg)
+    
 
     def start(self):
         """Start a new table"""
@@ -105,10 +108,10 @@ class PokerTable:
 
 
 class Player:
-    def __init__(self, stack):
+    def __init__(self, stack, hole_cards=None, current_bet=0):
         self.stack = stack
-        self.hole_cards = None
-        self.current_bet = 0
+        self.hole_cards = hole_cards
+        self.current_bet = current_bet
     
 
     def __repr__(self):

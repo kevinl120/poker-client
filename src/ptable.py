@@ -11,16 +11,16 @@ class PokerTable:
         self.sb = sb
         self.bb = bb
 
-        self.players = [None, None, None, None, None, None]
+        self.players = [None, None, None, None, None, None] # required for drawing
         self.active_players = 0
-        self.button_pos = None
-        self.current_turn = None
+        self.button_pos = None # required for drawing
+        self.current_turn = None # required for drawing
 
         self.deck = treys.Deck()
-        self.board = None
+        self.board = None # required for drawing
 
-        self.pot = 0
-        self.side_pots = {}
+        self.pot = 0 # required for drawing
+        self.side_pots = {} # required for drawing
     
 
     def __repr__(self):
@@ -85,15 +85,17 @@ class PokerTable:
         background_image = tk.PhotoImage(file="./resources/table.png")
         background_label = tk.Label(gui, image=background_image)
         background_label.place(x=0, y=0, relwidth=1, relheight=1)
-        gui.mainloop()
+        gui.update()
     
 
     ### HELPERS ########################
+
     def next_active_pos(self, pos):
         """Returns the table position of the next active player"""
-        while self.players[(pos+1) % len(self.players)] is None:
-            pos = pos + 1
-        return pos + 1
+        pos = (pos + 1) % len(self.players)
+        while self.players[pos] is None:
+            pos = (pos + 1) % len(self.players)
+        return pos
 
 
 class Player:
@@ -101,9 +103,8 @@ class Player:
         self.stack = stack
         self.hole_cards = None
         self.current_bet = 0
-        self.table_pos = None
     
 
     def __repr__(self):
         # return "Player({})".format(self.stack)
-        return "Player({}, {}, {}, {})".format(self.stack, self.hole_cards, self.current_bet, self.table_pos)
+        return "Player({}, {}, {})".format(self.stack, self.hole_cards, self.current_bet)

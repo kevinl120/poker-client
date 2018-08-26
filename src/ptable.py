@@ -78,13 +78,14 @@ class PokerTable:
     
 
     def add_player(self, new_player):
-        """Places the new player in a random open position"""
+        """Places the new player in a random open position. Returns the position."""
         if not self.is_full():
             rand_pos = randint(0, len(self.cfg["players"])-1)
             while not self.cfg["players"][rand_pos] is None:
                 rand_pos = randint(0, len(self.cfg["players"])-1)
             self.cfg["players"][rand_pos] = new_player
             self.cfg["active_players"] += 1
+            return rand_pos
     
 
     def redraw(self):

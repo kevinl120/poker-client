@@ -1,27 +1,17 @@
+"""Script for Poker client"""
 from ptable import PokerTable
 from ptable import Player
+from socket import AF_INET, socket, SOCK_STREAM
+from threading import Thread
 import tkinter as tk
 from treys import Card
 
-import time
 
 img_references = []
 
+
 def main():
-    table = PokerTable()
-    # table_str = "PokerTable({'sb': 0, 'bb': 0, 'players': [None, Player(0, [67115551, 270853], 0), Player(1, [268446761, 134236965], 0), Player(2, [134224677, 8406803], 0), None, None], 'active_players': 3, 'button_pos': None, 'current_turn': None, 'board': None, 'pot': 0, 'side_pots': {}})"
-    # table = eval(table_str)
-    # table_str2 = "PokerTable({'sb': 0, 'bb': 0, 'players': [None, Player(0, [268471337, 1082379], 0), None, None, Player(1, [16783383, 268454953], 0), Player(2, [164099, 8423187], 0)], 'active_players': 3, 'button_pos': None, 'current_turn': None, 'board': None, 'pot': 0, 'side_pots': {}})"
-    # table = eval(table_str2)
-    # table = ptable.PokerTable({"sb": 0.01, "bb": 0.02})
-    for x in range(8):
-        player = Player(x)
-        table.add_player(player)
-    # table.start()
-
-
-
-    my_player_num = 1
+    global root
 
     root = tk.Tk()
     root.geometry("1002x743")
@@ -30,14 +20,53 @@ def main():
     background_label = tk.Label(root, image=background_image)
     background_label.place(x=0, y=0)
 
-    draw_players(root, table, my_player_num)
-
-    print(table)
+    connect_to_server()
+    my_player_num = 1
 
     root.mainloop()
 
 
-def draw_players(window, table, my_player_num):
+### SOCKETS ###
+def connect_to_server():
+    global HOST, PORT, BUFSIZ, client_socket, receive_thread
+
+    HOST = input('Enter host: ')
+    PORT = input('Enter port: ')
+    if not PORT:
+        PORT = 33000
+    else:
+        PORT = int(PORT)
+
+    BUFSIZ = 1024
+    ADDR = (HOST, PORT)
+
+    client_socket = socket(AF_INET, SOCK_STREAM)
+    client_socket.connect(ADDR)
+
+    receive_thread = Thread(target=receive)
+    receive_thread.start()
+
+
+def receive():
+    """Handles receiving of messages."""
+    global my_player_num
+    while True:
+        try:
+            msg = client_socket.recv(BUFSIZ).decode("utf8")
+            print(msg)
+            if msg[0:3] == "mpn":
+                my_player_num = int(msg[3])
+            else:
+                table = eval(msg)
+                draw_players(root, table)
+        except OSError:  # Possibly client has left the chat.
+            break
+
+
+
+### TKINTER ###
+
+def draw_players(window, table):
     # hard-coded hole card coords
     card_coords = [[442, 531], [70, 400], [70, 164], [442, 33], [814, 164], [814, 400]]
     # hard-coded player label coordinates

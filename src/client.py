@@ -1,6 +1,9 @@
-from ptable import *
+from ptable import PokerTable
+from ptable import Player
 import tkinter as tk
 from treys import Card
+
+import time
 
 img_references = []
 
@@ -8,8 +11,15 @@ def main():
     table = PokerTable()
     # table_str = "PokerTable({'sb': 0, 'bb': 0, 'players': [None, Player(0, [67115551, 270853], 0), Player(1, [268446761, 134236965], 0), Player(2, [134224677, 8406803], 0), None, None], 'active_players': 3, 'button_pos': None, 'current_turn': None, 'board': None, 'pot': 0, 'side_pots': {}})"
     # table = eval(table_str)
-    table_str2 = "PokerTable({'sb': 0, 'bb': 0, 'players': [None, Player(1, [33564957, 8406803], 0), None, Player(0, [541447, 67127839], 0), None, Player(2, [268442665, 270853], 0)], 'active_players': 3, 'button_pos': None, 'current_turn': None, 'board': None, 'pot': 0, 'side_pots': {}})"
-    table = eval(table_str2)
+    # table_str2 = "PokerTable({'sb': 0, 'bb': 0, 'players': [None, Player(0, [268471337, 1082379], 0), None, None, Player(1, [16783383, 268454953], 0), Player(2, [164099, 8423187], 0)], 'active_players': 3, 'button_pos': None, 'current_turn': None, 'board': None, 'pot': 0, 'side_pots': {}})"
+    # table = eval(table_str2)
+    # table = ptable.PokerTable({"sb": 0.01, "bb": 0.02})
+    for x in range(8):
+        player = Player(x)
+        table.add_player(player)
+    table.start()
+
+
 
     my_player_num = 1
 
@@ -29,7 +39,7 @@ def main():
 
 def draw_players(window, table, my_player_num):
     # hard-coded hole card coords
-    card_coords = [[442, 531], [70, 400], [70, 164], [442, 531], [814, 164], [814, 400]]
+    card_coords = [[442, 531], [70, 400], [70, 164], [442, 33], [814, 164], [814, 400]]
     # hard-coded player label coordinates
     label_coords = [[419, 575], [47, 444], [47, 208], [419, 77], [791, 208], [791, 444]]
 
@@ -44,6 +54,7 @@ def draw_players(window, table, my_player_num):
         cards_canvas = tk.Canvas(window, width=119, height=86, bd=0, highlightthickness=0)
         cards_canvas.place(x=card_coords[x][0], y=card_coords[x][1])
         if x == 0:
+            print(player_iter)
             card0_img = tk.PhotoImage(file="./resources/cards-png/"+Card.int_to_str(players[player_iter].hole_cards[0])+".png")
             card1_img = tk.PhotoImage(file="./resources/cards-png/"+Card.int_to_str(players[player_iter].hole_cards[1])+".png")
         else:

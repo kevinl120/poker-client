@@ -7,10 +7,6 @@ def main():
         player = ptable.Player(x)
         table.add_player(player)
     table.start()
-    print(table.__repr__())
-    print(table)
-    # p1 = ptable.Player(100)
-    # print(p1)
 
     # another_table = eval("ptable."+tblstr)
 

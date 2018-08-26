@@ -17,7 +17,7 @@ def main():
     for x in range(8):
         player = Player(x)
         table.add_player(player)
-    table.start()
+    # table.start()
 
 
 
@@ -51,19 +51,20 @@ def draw_players(window, table, my_player_num):
         # Draw hole cards
         if players[player_iter] is None:
             continue
-        cards_canvas = tk.Canvas(window, width=119, height=86, bd=0, highlightthickness=0)
-        cards_canvas.place(x=card_coords[x][0], y=card_coords[x][1])
-        if x == 0:
-            print(player_iter)
-            card0_img = tk.PhotoImage(file="./resources/cards-png/"+Card.int_to_str(players[player_iter].hole_cards[0])+".png")
-            card1_img = tk.PhotoImage(file="./resources/cards-png/"+Card.int_to_str(players[player_iter].hole_cards[1])+".png")
-        else:
-            card0_img = tk.PhotoImage(file="./resources/cards-png/back.png")
-            card1_img = tk.PhotoImage(file="./resources/cards-png/back.png")
-        cards_canvas.create_image(0, 0, image=card0_img, anchor=tk.NW)
-        cards_canvas.create_image(59, 0, image=card1_img, anchor=tk.NW)
-        img_references.append(card0_img)
-        img_references.append(card1_img)
+        elif not players[player_iter].hole_cards is None:
+            cards_canvas = tk.Canvas(window, width=119, height=86, bd=0, highlightthickness=0)
+            cards_canvas.place(x=card_coords[x][0], y=card_coords[x][1])
+            if x == 0:
+                print(player_iter)
+                card0_img = tk.PhotoImage(file="./resources/cards-png/"+Card.int_to_str(players[player_iter].hole_cards[0])+".png")
+                card1_img = tk.PhotoImage(file="./resources/cards-png/"+Card.int_to_str(players[player_iter].hole_cards[1])+".png")
+            else:
+                card0_img = tk.PhotoImage(file="./resources/cards-png/back.png")
+                card1_img = tk.PhotoImage(file="./resources/cards-png/back.png")
+            cards_canvas.create_image(0, 0, image=card0_img, anchor=tk.NW)
+            cards_canvas.create_image(59, 0, image=card1_img, anchor=tk.NW)
+            img_references.append(card0_img)
+            img_references.append(card1_img)
 
         # Draw player labels
         player_label_canvas = tk.Canvas(window, width=164, height=44, bd=0, highlightthickness=0)

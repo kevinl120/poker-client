@@ -33,7 +33,7 @@ def accept_incoming_connections():
         print("%s:%s has connected." % client_address)
         addresses[client] = client_address
         client.send(bytes("mpn"+str(table.add_player(ptable.Player(2))), "utf8"))
-        if table.cfg["active_players"] > 1:
+        if table.cfg["players_at_table"] > 1:
             table.start()
         broadcast(bytes(str(table),"utf8"))
         Thread(target=handle_client, args=(client,)).start()

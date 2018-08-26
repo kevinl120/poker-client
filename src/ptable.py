@@ -8,6 +8,9 @@ class PokerTable:
     evaluator = treys.Evaluator()
 
     def __init__(self, sb, bb):
+        self.sb = sb
+        self.bb = bb
+
         self.players = [None, None, None, None, None, None]
         self.active_players = 0
         self.button_pos = None
@@ -16,14 +19,12 @@ class PokerTable:
         self.deck = treys.Deck()
         self.board = None
 
-        self.sb = sb
-        self.bb = bb
         self.pot = 0
         self.side_pots = {}
     
 
     def __repr__(self):
-        return "PokerTable({}, {}, {}, {}, {}, {}, {}, {}, {}, {})".format(self.players, self.active_players, self.button_pos, self.current_turn, self.deck.cards, self.board, self.sb, self.bb, self.pot, self.side_pots)
+        return "PokerTable({}, {}, {}, {}, {}, {}, {}, {}, {}, {})".format(self.sb, self.bb, self.players, self.active_players, self.button_pos, self.current_turn, self.deck.cards, self.board, self.pot, self.side_pots)
     
 
     def start(self):

@@ -2,43 +2,49 @@ from random import randint
 import tkinter as tk
 import treys
 
-
 class PokerTable:
 
     evaluator = treys.Evaluator()
-
-    def __init__(self, sb, bb):
-        self.sb = sb
-        self.bb = bb
-
-        self.players = [None, None, None, None, None, None] # required for drawing
-        self.active_players = 0
-        self.button_pos = None # required for drawing
-        self.current_turn = None # required for drawing
-
-        self.deck = treys.Deck()
-        self.board = None # required for drawing
-
-        self.pot = 0 # required for drawing
-        self.side_pots = {} # required for drawing
     
+    def __init__(self, cfg=None):
+        if cfg is None:
+            cfg = {}
+
+        default_cfg = {}
+        default_cfg["sb"] = 0
+        default_cfg["bb"] = 0
+
+        default_cfg["players"] = [None, None, None, None, None, None] # required for drawing
+        default_cfg["active_players"] = 0
+        default_cfg["button_pos"] = None # required for drawing
+        default_cfg["current_turn"] = None # required for drawing
+
+        default_cfg["deck"] = treys.Deck()
+        default_cfg["board"] = None # required for drawing
+
+        default_cfg["pot"] = 0 # required for drawing
+        default_cfg["side_pots"] = {} # required for drawing
+
+        # overwrite default cfg with new cfg
+        self.cfg = dict(default_cfg, **cfg)
+
 
     def __repr__(self):
-        return "PokerTable({}, {}, {}, {}, {}, {}, {}, {}, {}, {})".format(self.sb, self.bb, self.players, self.active_players, self.button_pos, self.current_turn, self.deck.cards, self.board, self.pot, self.side_pots)
-    
+        # WARNING: treys.Deck() has no __repr__, prints out location in memory
+        return "PokerTable({})".format(self.cfg)
+   
 
     def start(self):
         """Start a new table"""
         print("Starting Table")
-
-        if self.active_players < 2:
+        if self.cfg["active_players"] < 2:
             print("Cannot start with less than two players")
             return
 
         # Assign button to a random player
-        rand_pos = randint(0, len(self.players)-1)
-        while self.players[rand_pos] is None:
-            rand_pos = randint(0, len(self.players)-1)
+        rand_pos = randint(0, len(self.cfg["players"])-1)
+        while self.cfg["players"][rand_pos] is None:
+            rand_pos = randint(0, len(self.cfg["players"])-1)
         self.button_pos = rand_pos
 
         self.deal()
@@ -46,36 +52,36 @@ class PokerTable:
 
     def deal(self):
         """Start a new hand"""
-        self.deck.shuffle()
-        for player in self.players:
+        self.cfg["deck"].shuffle()
+        for player in self.cfg["players"]:
             if not player is None:
-                player.hole_cards = self.deck.draw(2)
+                player.hole_cards = self.cfg["deck"].draw(2)
         
         # Set blinds and start betting round
         sb_pos = self.next_active_pos(self.button_pos)
         bb_pos = self.next_active_pos(sb_pos)
-        self.add_player_bet(sb_pos, self.sb)
-        self.add_player_bet(bb_pos, self.bb)
+        self.add_player_bet(sb_pos, self.cfg["sb"])
+        self.add_player_bet(bb_pos, self.cfg["bb"])
         self.current_turn = self.next_active_pos(bb_pos)
 
 
     def add_player_bet(self, player_pos, bet):
         """Make player in player_pos bet with size bet"""
-        self.players[player_pos].current_bet = bet
-        self.pot += bet
+        self.cfg["players"][player_pos].current_bet = bet
+        self.cfg["pot"]+= bet
 
     def is_full(self):
-        return self.active_players >= len(self.players)
+        return self.cfg["active_players"] >= len(self.cfg["players"])
     
 
     def add_player(self, new_player):
         """Places the new player in a random open position"""
         if not self.is_full():
-            rand_pos = randint(0, len(self.players)-1)
-            while not self.players[rand_pos] is None:
-                rand_pos = randint(0, len(self.players)-1)
-            self.players[rand_pos] = new_player
-            self.active_players += 1
+            rand_pos = randint(0, len(self.cfg["players"])-1)
+            while not self.cfg["players"][rand_pos] is None:
+                rand_pos = randint(0, len(self.cfg["players"])-1)
+            self.cfg["players"][rand_pos] = new_player
+            self.cfg["active_players"] += 1
     
 
     def redraw(self):
@@ -92,9 +98,9 @@ class PokerTable:
 
     def next_active_pos(self, pos):
         """Returns the table position of the next active player"""
-        pos = (pos + 1) % len(self.players)
-        while self.players[pos] is None:
-            pos = (pos + 1) % len(self.players)
+        pos = (pos + 1) % len(self.cfg["players"])
+        while self.cfg["players"][pos] is None:
+            pos = (pos + 1) % len(self.cfg["players"])
         return pos
 
 

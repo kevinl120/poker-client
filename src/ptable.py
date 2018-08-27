@@ -34,6 +34,7 @@ class PokerTable:
         default_cfg["last_raiser"] = None
         default_cfg["showdown"] = False
         default_cfg["winner"] = [] # [winning_hand_rank, winning_player]
+        default_cfg["end_of_hand"] = False
 
         # overwrite default cfg with new cfg
         self.cfg = dict(default_cfg, **cfg)
@@ -243,20 +244,26 @@ class PokerTable:
 
 
     def player_wins(self, player_pos):
+        self.cfg["end_of_hand"] = True
+        self.cfg["players"][player_pos].stack += self.cfg["pot"]
+            
+    def start_new_hand(self):
         for _ in range(self.cfg["players_at_table"]):
             self.cfg["players"][self.cfg["current_turn"]].current_bet = 0
             self.cfg["players"][self.cfg["current_turn"]].show_cards = False
             self.cfg["players"][self.cfg["current_turn"]].possible_actions = []
             self.cfg["current_turn"] = self.next_player(self.cfg["current_turn"])
         self.cfg["players_in_hand"] = 0
-        self.cfg["players"][player_pos].stack += self.cfg["pot"]
         self.cfg["board"] = []
         self.cfg["pot"] = 0
         self.cfg["side_pots"] = {}
         self.cfg["button_pos"] = self.next_player(self.cfg["button_pos"])
         self.cfg["showdown"] = False
         self.cfg["winner"] = []
+        self.cfg["end_of_hand"] = False
         self.deal()
+
+
 
 
     ### General table functions ### 

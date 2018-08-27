@@ -87,6 +87,11 @@ def perf_action(msg):
     elif action == "sho": # show
         table.player_shows(player_pos)
     
+    if table.cfg["end_of_hand"]:
+        broadcast(bytes(str(table),"utf8"))
+        time.sleep(2)
+        table.start_new_hand()
+    
 
 if __name__ == '__main__':
     main()

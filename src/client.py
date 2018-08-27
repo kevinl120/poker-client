@@ -193,7 +193,7 @@ def draw(window, table):
                 check_button.place(x=button_coords[1], y=button_y_coord)
                 img_references.add(check_button_img)
                 bet_button_img = tk.PhotoImage(file="./resources/bet_button.png")
-                bet_button = tk.Button(window, image=bet_button_img, bd=0, highlightthickness=0)
+                bet_button = tk.Button(window, image=bet_button_img, command=bet_callback, bd=0, highlightthickness=0)
                 bet_button.place(x=button_coords[2], y=button_y_coord)
                 img_references.add(bet_button_img)
             else:
@@ -203,7 +203,7 @@ def draw(window, table):
                 call_button.place(x=button_coords[1], y=button_y_coord)
                 img_references.add(call_button_img)
                 raise_button_img = tk.PhotoImage(file="./resources/raise_button.png")
-                raise_button = tk.Button(window, image=raise_button_img, bd=0, highlightthickness=0)
+                raise_button = tk.Button(window, image=raise_button_img, command=bet_callback, bd=0, highlightthickness=0)
                 raise_button.place(x=button_coords[2], y=button_y_coord)
                 img_references.add(raise_button_img)
 

@@ -19,9 +19,19 @@ def main():
     tblstr = "PokerTable({'sb': 1, 'bb': 2, 'players': [Player(198, [73730, 147715], False, 2, []), None, Player(199, [4228625, 81922], False, 1, ['fold', 'call', [4, 199]]), None, None, None], 'players_at_table': 2, 'players_in_hand': 2, 'button_pos': 0, 'current_turn': 2, 'board': [], 'pot': 3, 'side_pots': {}, 'total_to_call':2, 'last_raise_size': 2, 'last_raiser': 2, 'showdown': False, 'winner': []})"
     table = eval(tblstr)
 
-    table.player_folds(2)
-    table.player_mucks(2)
-    table.player_mucks(0)
+    table.player_calls(2)
+    table.player_checks(0)
+    
+    table.player_checks(2)
+    table.player_checks(0)
+
+    table.player_checks(2)
+    table.player_checks(0)
+
+    table.player_checks(2)
+    table.player_checks(0)
+
+    table.player_shows(0)
 
     print(table)
 

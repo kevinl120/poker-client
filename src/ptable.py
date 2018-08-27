@@ -88,7 +88,10 @@ class PokerTable:
     def get_player_options(self):
         """Details current player actions"""
         if self.cfg["showdown"]:
-            self.cfg["players"][self.cfg["current_turn"]].possible_actions = ["muck", "show"]
+            if self.cfg["current_turn"] == self.cfg["last_raiser"]:
+                self.player_wins(self.cfg["winner"][1])
+            else:
+                self.cfg["players"][self.cfg["current_turn"]].possible_actions = ["muck", "show"]
             return
         if self.cfg["current_turn"] == self.cfg["last_raiser"]:
             # Everyone checked/called
@@ -187,9 +190,7 @@ class PokerTable:
     def player_shows(self, player_pos):
         if player_pos == self.cfg["current_turn"]:
             if self.cfg["showdown"]:
-                if self.cfg["current_turn"] == self.cfg["last_raiser"]:
-                    self.player_wins(self.cfg["winner"][1])
-                else:
+                    self.cfg["players"][player_pos].possible_actions = []
                     self.cfg["players"][player_pos].show_cards = True
                     hand_rank = PokerTable.evaluator.evaluate(self.cfg["board"], self.cfg["players"][player_pos].hole_cards)
                     if hand_rank < self.cfg["winner"][0]:
@@ -197,6 +198,7 @@ class PokerTable:
                         self.cfg["winner"][0] = hand_rank
                         self.cfg["winner"][1] = player_pos
                     self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
+                    self.get_player_options()
             else:
                 # Folded before showdown
                 self.cfg["players"][player_pos].show_cards = True
@@ -244,6 +246,7 @@ class PokerTable:
         for _ in range(self.cfg["players_at_table"]):
             self.cfg["players"][self.cfg["current_turn"]].current_bet = 0
             self.cfg["players"][self.cfg["current_turn"]].show_cards = False
+            self.cfg["players"][self.cfg["current_turn"]].possible_actions = []
             self.cfg["current_turn"] = self.next_player(self.cfg["current_turn"])
         self.cfg["players_in_hand"] = 0
         self.cfg["players"][player_pos].stack += self.cfg["pot"]
@@ -321,5 +324,4 @@ class Player:
     
 
     def __repr__(self):
-        # return "Player({})".format(self.stack)
         return "Player({}, {}, {}, {}, {})".format(self.stack, self.hole_cards, self.show_cards, self.current_bet, self.possible_actions)

@@ -1,84 +1,10 @@
-"""Script for Poker client"""
 from ptable import PokerTable, Player
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 import tkinter as tk
 from treys import Card
 
-
-img_references = set()
-
-
-def main():
-    global root
-
-    root = tk.Tk()
-    root.geometry("1002x743")
-    root.title("Poker Table")
-    root.protocol("WM_DELETE_WINDOW", on_closing)
-
-    connect_to_server()
-
-    root.mainloop()
-
-
-### SOCKETS ###
-def connect_to_server():
-    global HOST, PORT, BUFSIZ, client_socket, receive_thread
-
-    HOST = input('Enter host: ')
-    PORT = input('Enter port: ')
-    if not PORT:
-        PORT = 33000
-    else:
-        PORT = int(PORT)
-
-    BUFSIZ = 1024
-    ADDR = (HOST, PORT)
-
-    client_socket = socket(AF_INET, SOCK_STREAM)
-    client_socket.connect(ADDR)
-
-    receive_thread = Thread(target=receive)
-    receive_thread.start()
-
-
-def receive():
-    """Handles receiving of messages."""
-    global my_player_num
-    while True:
-        try:
-            msg = client_socket.recv(BUFSIZ).decode("utf8")
-            print(msg)
-            if msg[0:3] == "mpn":
-                my_player_num = int(msg[3])
-            else:
-                table = eval(msg)
-                draw(root, table)
-        except OSError:  # Possibly client has left the chat.
-            break
-
-
-# def send(event=None):  # event is passed by binders.
-#     """Handles sending of messages."""
-#     msg = my_msg.get()
-#     my_msg.set("")  # Clears input field.
-#     client_socket.send(bytes(msg, "utf8"))
-#     if msg == "{quit}":
-#         client_socket.close()
-#         root.quit()
-
-
-def on_closing(event=None):
-    """This function is to be called when the window is closed."""
-    client_socket.send(bytes("lea"+str(my_player_num), "utf8"))
-    client_socket.close()
-    root.quit()
-
-
-### TKINTER ###
-
-def draw(window, table):
+def draw(window, table, my_player_num, img_references):
     # Draw background
     background_image = tk.PhotoImage(file="./resources/table.png")
     background_label = tk.Label(window, image=background_image)
@@ -141,7 +67,3 @@ def draw(window, table):
         adjusted_button_pos = (table.cfg["button_pos"] + len(players) - my_player_num) % len(players)
         button_label.place(x=button_coords[adjusted_button_pos][0], y=button_coords[adjusted_button_pos][1])
         img_references.add(button_img)
-
-
-if __name__ == '__main__':
-    main()

@@ -16,18 +16,20 @@ class PokerTable:
 
         default_cfg["players"] = [None, None, None, None, None, None] # required for drawing
         default_cfg["players_at_table"] = 0
+        default_cfg["players_in_hand"] = 0
         default_cfg["button_pos"] = None # required for drawing
         default_cfg["current_turn"] = None # required for drawing
 
         default_cfg["deck"] = treys.Deck()
-        default_cfg["board"] = None # required for drawing
+        default_cfg["board"] = [] # required for drawing
 
         default_cfg["pot"] = 0 # required for drawing
         default_cfg["side_pots"] = {} # required for drawing
 
         ### Helpers in a hand
-        default_cfg["bet_to_match"] = None # highest bet on a street
-        default_cfg["last_bet"] = None # Size of last bet/raise
+        default_cfg["total_to_call"] = None # Highest bet on a street
+        default_cfg["last_raise_size"] = None # Size of last bet/raise
+        default_cfg["last_raiser"] = None
 
         # overwrite default cfg with new cfg
         self.cfg = dict(default_cfg, **cfg)
@@ -63,19 +65,93 @@ class PokerTable:
         for player in self.cfg["players"]:
             if not player is None:
                 player.hole_cards = self.cfg["deck"].draw(2)
+                self.cfg["players_in_hand"] += 1
         
         # Set blinds and start betting round
         self.cfg["current_turn"] = self.next_active_player(self.cfg["button_pos"])
         self.add_player_bet(self.cfg["current_turn"], self.cfg["sb"])
+        self.cfg["last_raiser"] = self.cfg["current_turn"]
         self.add_player_bet(self.cfg["current_turn"], self.cfg["bb"])
+        self.cfg["last_raise_size"] = self.cfg["bb"]
+        self.cfg["total_to_call"] = self.cfg["bb"]
+
+        self.get_player_options()
+    
+
+    def get_player_options(self):
+        """Plays out the current street"""
+        if self.cfg["current_turn"] == self.cfg["last_raiser"]:
+            # Everyone checked/called
+            # Set all bets to 0
+            for _ in range(self.cfg["players_in_hand"]):
+                self.cfg["players"][self.cfg["current_turn"]].current_bet = 0
+                self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
+            # Go to next street
+            if len(self.cfg["board"]) == 5:
+                # TODO: go to showdown
+                pass
+            elif len(self.cfg["board"]) == 4:
+                # Deal river
+                self.cfg["board"].append(self.cfg["deck"].draw(1))
+            elif len(self.cfg["board"]) == 3:
+                # Deal turn
+                self.cfg["board"].append(self.cfg["deck"].draw(1))
+                pass
+            elif len(self.cfg["board"]) == 0:
+                # Deal flop
+                self.cfg["board"].append(self.cfg["deck"].draw(3))
+            self.cfg["last_raise_size"] = self.cfg["bb"]
+            self.cfg["total_to_call"] = 0
+            self.cfg["current_turn"] = self.next_active_player(self.cfg["button_pos"])
+            self.cfg["last_raiser"] = self.last_active_player(self.cfg["current_turn"])
+            self.get_player_options()
+        elif self.cfg["total_to_call"] == self.cfg["players"][self.cfg["current_turn"]].current_bet:
+            # Player has option of checking
+            self.cfg["players"][self.cfg["current_turn"]].possible_actions = ["fold", "check", [min(self.cfg["last_raise_size"], self.cfg["players"][self.cfg["current_turn"]].stack), self.cfg["players"][self.cfg["current_turn"]].stack]]
+        else:
+            # Player is facing a raise
+            # TODO: if player is facing all in, create side pot
+            self.cfg["players"][self.cfg["current_turn"]].possible_actions = ["fold", "call", [min(self.cfg["last_raise_size"]+self.cfg["total_to_call"], self.cfg["players"][self.cfg["current_turn"]].stack), self.cfg["players"][self.cfg["current_turn"]].stack]]
+
+
+    def player_folds(self, player_pos):
+        if player_pos == self.cfg["current_turn"]:
+            self.cfg["players"][player_pos].hole_cards = None
+            self.cfg["players_in_hand"] -= 1
+            if self.cfg["players_in_hand"] == 1:
+                pass
+                # TODO:
+                # Provide option for folder to show/muck hand
+                # Pay out winner
+                # Provide option for winner to show/muck hand
+
+            self.cfg["players"][player_pos].possible_actions = []
+            self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
+            self.get_player_options()
+
+
+    def player_checks(self, player_pos):
+        if player_pos == self.cfg["current_turn"]:
+            self.cfg["players"][player_pos].possible_actions = []
+            self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
+            self.get_player_options()
 
 
     def add_player_bet(self, player_pos, bet):
         """Make player in player_pos bet with size bet"""
-        self.cfg["players"][player_pos].current_bet = bet
-        self.cfg["players"][player_pos].stack -= bet
-        self.cfg["pot"]+= bet
-        self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
+        if player_pos == self.cfg["current_turn"]:
+            self.cfg["players"][player_pos].possible_actions = []
+            self.cfg["players"][player_pos].current_bet += bet
+            if self.cfg["players"][player_pos].current_bet - self.cfg["total_to_call"] > 0:
+                # Player raised
+                self.cfg["last_raise_size"] = self.cfg["players"][player_pos].current_bet - self.cfg["total_to_call"]
+                self.cfg["last_raiser"] = self.cfg["current_turn"]
+            self.cfg["total_to_call"] = self.cfg["players"][player_pos].current_bet
+            self.cfg["players"][player_pos].stack -= bet
+            self.cfg["pot"]+= bet
+
+            self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
+            self.get_player_options()
 
 
     def is_full(self):
@@ -98,6 +174,7 @@ class PokerTable:
         self.cfg["players"][player_num] = None
         self.cfg["players_at_table"] -= 1
         # TODO: check if hand is over
+        # TODO: check if player was currently playing in hand
 
 
     ### HELPERS ########################
@@ -116,6 +193,13 @@ class PokerTable:
         while self.cfg["players"][pos] is None or self.cfg["players"][pos].hole_cards is None:
             pos = (pos + 1) % len(self.cfg["players"])
         return pos
+    
+
+    def last_active_player(self, pos):
+        pos = (pos - 1) % len(self.cfg["players"])
+        while self.cfg["players"][pos] is None or self.cfg["players"][pos].hole_cards is None:
+            pos = (pos - 1) % len(self.cfg["players"])
+        return pos
 
 
 class Player:
@@ -123,10 +207,14 @@ class Player:
         self.stack = stack
         self.hole_cards = hole_cards
         self.current_bet = current_bet
+        # possible_actions: list of 2 or 3 elements.
+        # [muck/fold, show/check/call, [min_bet, max_bet]]
         if possible_actions is None:
             self.possible_actions = []
+        else:
+            self.possible_actions = possible_actions
     
 
     def __repr__(self):
         # return "Player({})".format(self.stack)
-        return "Player({}, {}, {})".format(self.stack, self.hole_cards, self.current_bet)
+        return "Player({}, {}, {}, {})".format(self.stack, self.hole_cards, self.current_bet, self.possible_actions)

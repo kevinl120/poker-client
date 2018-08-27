@@ -92,6 +92,11 @@ def check_callback():
 def call_callback():
     send(str(my_player_num)+"cal")
 
+def show_callback():
+    send(str(my_player_num)+"sho")
+
+def muck_callback():
+    send(str(my_player_num)+"muk")
 
 def draw(window, table):
     # Draw background
@@ -117,13 +122,13 @@ def draw(window, table):
         player_iter = (x+my_player_num)%len(players)
 
         if players[player_iter] is None:
-            # If no player at table, skip this spot
+            # If no player at this position, skip it
             continue
         elif not players[player_iter].hole_cards is None:
             # Draw hole cards
             cards_canvas = tk.Canvas(window, width=119, height=86, bd=0, highlightthickness=0)
             cards_canvas.place(x=card_coords[x][0], y=card_coords[x][1])
-            if x == 0:
+            if x == 0 or players[player_iter].show_cards:
                 card0_img = tk.PhotoImage(file="./resources/cards-png/"+Card.int_to_str(players[player_iter].hole_cards[0])+".png")
                 card1_img = tk.PhotoImage(file="./resources/cards-png/"+Card.int_to_str(players[player_iter].hole_cards[1])+".png")
             else:
@@ -196,15 +201,15 @@ def draw(window, table):
             fold_button = tk.Button(window, image=fold_button_img, command=fold_callback, bd=0, highlightthickness=0)
             fold_button.place(x=button_coords[0], y=button_y_coord)
             img_references.add(fold_button_img)
-        else:
+        elif len(table.cfg["players"][my_player_num].possible_actions) == 2:
             # Actions are show or muck
             show_button_img = tk.PhotoImage(file="./resources/show_button.png")
-            show_button = tk.Button(window, image=call_button_img, bd=0, highlightthickness=0)
-            show_button.place(x=button_coords[0], y=button_y_coord)
+            show_button = tk.Button(window, image=show_button_img, command=show_callback, bd=0, highlightthickness=0)
+            show_button.place(x=button_coords[1], y=button_y_coord)
             img_references.add(show_button_img)
             muck_button_img = tk.PhotoImage(file="./resources/muck_button.png")
-            muck_button = tk.Button(window, image=muck_button_img, bd=0, highlightthickness=0)
-            muck_button.place(x=button_coords[1], y=button_y_coord)
+            muck_button = tk.Button(window, image=muck_button_img, command=muck_callback, bd=0, highlightthickness=0)
+            muck_button.place(x=button_coords[0], y=button_y_coord)
             img_references.add(muck_button_img)
             
     # Draw pot

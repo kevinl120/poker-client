@@ -82,6 +82,10 @@ def perf_action(msg):
     elif action == "bet": # bet
         bet = int(msg[4:])
         table.add_player_bet(player_pos, bet)
+    elif action == "muk": # muck
+        table.player_mucks(player_pos)
+    elif action == "sho": # show
+        table.player_shows(player_pos)
     
 
 if __name__ == '__main__':

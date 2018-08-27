@@ -34,7 +34,7 @@ def draw(window, table, my_player_num, img_references):
             # Draw hole cards
             cards_canvas = tk.Canvas(window, width=119, height=86, bd=0, highlightthickness=0)
             cards_canvas.place(x=card_coords[x][0], y=card_coords[x][1])
-            if x == 0:
+            if x == 0 or players[player_iter].show_cards:
                 card0_img = tk.PhotoImage(file="./resources/cards-png/"+Card.int_to_str(players[player_iter].hole_cards[0])+".png")
                 card1_img = tk.PhotoImage(file="./resources/cards-png/"+Card.int_to_str(players[player_iter].hole_cards[1])+".png")
             else:
@@ -110,12 +110,12 @@ def draw(window, table, my_player_num, img_references):
         else:
             # Actions are show or muck
             show_button_img = tk.PhotoImage(file="./resources/show_button.png")
-            show_button = tk.Button(window, image=call_button_img, bd=0, highlightthickness=0)
-            show_button.place(x=button_coords[0], y=button_y_coord)
+            show_button = tk.Button(window, image=show_button_img, bd=0, highlightthickness=0)
+            show_button.place(x=button_coords[1], y=button_y_coord)
             img_references.add(show_button_img)
             muck_button_img = tk.PhotoImage(file="./resources/muck_button.png")
             muck_button = tk.Button(window, image=muck_button_img, bd=0, highlightthickness=0)
-            muck_button.place(x=button_coords[1], y=button_y_coord)
+            muck_button.place(x=button_coords[0], y=button_y_coord)
             img_references.add(muck_button_img)
     
     # Draw pot

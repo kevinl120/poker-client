@@ -32,6 +32,8 @@ class PokerTable:
         default_cfg["total_to_call"] = None # Highest bet on a street
         default_cfg["last_raise_size"] = None # Size of last bet/raise
         default_cfg["last_raiser"] = None
+        default_cfg["showdown"] = False
+        default_cfg["winner"] = [] # [winning_hand_rank, winning_player]
 
         # overwrite default cfg with new cfg
         self.cfg = dict(default_cfg, **cfg)
@@ -85,6 +87,9 @@ class PokerTable:
 
     def get_player_options(self):
         """Details current player actions"""
+        if self.cfg["showdown"]:
+            self.cfg["players"][self.cfg["current_turn"]].possible_actions = ["muck", "show"]
+            return
         if self.cfg["current_turn"] == self.cfg["last_raiser"]:
             # Everyone checked/called
             # Set all bets to 0
@@ -93,8 +98,10 @@ class PokerTable:
                 self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
             # Go to next street
             if len(self.cfg["board"]) == 5:
-                # TODO: go to showdown
-                pass
+                # Go to showdown
+                self.prepare_showdown()
+                self.get_player_options()
+                return
             elif len(self.cfg["board"]) == 4:
                 # Deal river
                 self.cfg["board"].append(self.cfg["deck"].draw(1))
@@ -128,11 +135,9 @@ class PokerTable:
             self.cfg["players"][player_pos].possible_actions = []
 
             if self.cfg["players_in_hand"] == 2:
-                self.player_wins(self.next_active_player(player_pos))
+                self.cfg["players"][player_pos].possible_actions = ["show", "muck"]
+                self.cfg["winner"] = [0, self.next_active_player(player_pos)]
                 return
-                # TODO:
-                # Provide option for folder to show/muck hand
-                # Provide option for winner to show/muck hand
 
             self.cfg["players"][player_pos].hole_cards = None
             self.cfg["players"][player_pos].current_bet = 0
@@ -144,7 +149,6 @@ class PokerTable:
             # Similar workaround to the one in self.draw()
             if self.cfg["last_raiser"] == player_pos:
                 self.cfg["last_raiser"] = self.next_active_player(player_pos)
-
 
 
     def player_checks(self, player_pos):
@@ -175,23 +179,81 @@ class PokerTable:
 
             self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
             self.get_player_options()
+    
+
+    def player_shows(self, player_pos):
+        if player_pos == self.cfg["current_turn"]:
+            if self.cfg["showdown"]:
+                if self.cfg["current_turn"] == self.cfg["last_raiser"]:
+                    self.player_wins(self.cfg["winner"][1])
+                else:
+                    self.cfg["players"][player_pos].show_cards = True
+                    hand_rank = PokerTable.evaluator.evaluate(self.cfg["board"], self.cfg["players"][player_pos].hole_cards)
+                    if hand_rank < self.cfg["winner"][0]:
+                        # Hand is better than previous best hand
+                        self.cfg["winner"][0] = hand_rank
+                        self.cfg["winner"][1] = player_pos
+                    self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
+            else:
+                # Folded before showdown
+                self.cfg["players"][player_pos].show_cards = True
+                if player_pos == self.cfg["winner"][1]:
+                    self.player_wins(player_pos)
+                else:
+                    self.cfg["players"][player_pos].possible_actions = []
+                    self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
+                    self.cfg["players"][self.cfg["current_turn"]].possible_actions = ["show", "muck"]
 
 
-    def player_wins(self, player_pos):
+    def player_mucks(self, player_pos):
+        if player_pos == self.cfg["current_turn"]:
+            self.cfg["players"][self.cfg["current_turn"]].possible_actions = []
+
+            if self.cfg["showdown"]:
+                if self.next_active_player(player_pos) == self.cfg["last_raiser"]:
+                    self.player_wins(self.cfg["winner"][1])
+                    return
+            else:
+                # Folded before showdown
+                if player_pos == self.cfg["winner"][1]:
+                    self.player_wins(player_pos)
+                    return
+            
+            # These actions apply when player_pos is not last to act
+            self.cfg["players"][self.cfg["current_turn"]].hole_cards = None
+            self.cfg["players_in_hand"] -= 1
+            self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
+            self.cfg["players"][self.cfg["current_turn"]].possible_actions = ["show, muck"]
+    
+
+    def prepare_showdown(self):
         for _ in range(self.cfg["players_in_hand"]):
             self.cfg["players"][self.cfg["current_turn"]].current_bet = 0
             self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
+        self.cfg["showdown"] = True
+        self.cfg["players"][self.cfg["current_turn"]].show_cards = True
+        self.cfg["winner"].append(PokerTable.evaluator.evaluate(self.cfg["board"], self.cfg["players"][self.cfg["current_turn"]].hole_cards))
+        self.cfg["winner"].append(self.cfg["current_turn"])
+        self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
+
+
+    def player_wins(self, player_pos):
+        for _ in range(self.cfg["players_at_table"]):
+            self.cfg["players"][self.cfg["current_turn"]].current_bet = 0
+            self.cfg["players"][self.cfg["current_turn"]].show_cards = False
+            self.cfg["current_turn"] = self.next_player(self.cfg["current_turn"])
         self.cfg["players_in_hand"] = 0
         self.cfg["players"][player_pos].stack += self.cfg["pot"]
         self.cfg["board"] = []
         self.cfg["pot"] = 0
         self.cfg["side_pots"] = {}
-        self.cfg["button_pos"] = self.next_active_player(self.cfg["button_pos"])
+        self.cfg["button_pos"] = self.next_player(self.cfg["button_pos"])
+        self.cfg["showdown"] = False
+        self.cfg["winner"] = []
         self.deal()
 
 
     ### General table functions ### 
-
 
     def is_full(self):
         return self.cfg["players_at_table"] >= len(self.cfg["players"])
@@ -242,9 +304,10 @@ class PokerTable:
 
 
 class Player:
-    def __init__(self, stack, hole_cards=None, current_bet=0, possible_actions=None):
+    def __init__(self, stack, hole_cards=None, show_cards=False, current_bet=0, possible_actions=None):
         self.stack = stack
         self.hole_cards = hole_cards
+        self.show_cards = show_cards
         self.current_bet = current_bet
         # possible_actions: list of 2 or 3 elements.
         # [muck/fold, show/check/call, [min_bet, max_bet]]
@@ -256,4 +319,4 @@ class Player:
 
     def __repr__(self):
         # return "Player({})".format(self.stack)
-        return "Player({}, {}, {}, {})".format(self.stack, self.hole_cards, self.current_bet, self.possible_actions)
+        return "Player({}, {}, {}, {}, {})".format(self.stack, self.hole_cards, self.show_cards, self.current_bet, self.possible_actions)

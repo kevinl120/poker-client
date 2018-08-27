@@ -165,7 +165,7 @@ class PokerTable:
 
 
     def add_player_bet(self, player_pos, bet):
-        """Make player in player_pos bet with size bet"""
+        """Make player in player_pos bet with size bet (bet/raise by)"""
         if player_pos == self.cfg["current_turn"]:
             self.cfg["players"][player_pos].possible_actions = []
             self.cfg["players"][player_pos].current_bet += bet
@@ -180,6 +180,9 @@ class PokerTable:
             self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
             self.get_player_options()
     
+    def add_player_bet_to(self, player_pos, bet):
+        """Bet/raise to bet"""
+        self.add_player_bet(player_pos, bet-self.cfg["players"][player_pos].current_bet)
 
     def player_shows(self, player_pos):
         if player_pos == self.cfg["current_turn"]:

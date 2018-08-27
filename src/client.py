@@ -10,9 +10,10 @@ img_references = set()
 
 
 def main():
-    global root
+    global root, bet_entry # better way of doing this?
 
     root = tk.Tk()
+    bet_entry = tk.StringVar()
     root.geometry("1002x743")
     root.title("Poker Table")
     root.protocol("WM_DELETE_WINDOW", on_closing)
@@ -45,7 +46,7 @@ def connect_to_server():
 
 def receive():
     """Handles receiving of messages."""
-    global my_player_num
+    global my_player_num, table
     while True:
         try:
             msg = client_socket.recv(BUFSIZ).decode("utf8")
@@ -91,6 +92,14 @@ def check_callback():
 
 def call_callback():
     send(str(my_player_num)+"cal")
+
+def bet_callback(event=None):
+    if bet_is_valid():
+        send(str(my_player_num)+"bet"+bet_entry.get())
+
+def bet_is_valid(event=None):
+    cur_player = table.cfg["players"][table.cfg["current_turn"]]
+    return int(bet_entry.get()) >= cur_player.possible_actions[2][0] and int(bet_entry.get()) <= cur_player.possible_actions[2][1]
 
 def show_callback():
     send(str(my_player_num)+"sho")
@@ -197,6 +206,12 @@ def draw(window, table):
                 raise_button = tk.Button(window, image=raise_button_img, bd=0, highlightthickness=0)
                 raise_button.place(x=button_coords[2], y=button_y_coord)
                 img_references.add(raise_button_img)
+
+            # Draw bet amount entry field
+            entry_field = tk.Entry(window, textvariable=bet_entry, validate="focusin", validatecommand="bet_is_valid")
+            entry_field.bind("<Return>", bet_callback)
+            entry_field.place(x=600, y=685)
+
             fold_button_img = tk.PhotoImage(file="./resources/fold_button.png")
             fold_button = tk.Button(window, image=fold_button_img, command=fold_callback, bd=0, highlightthickness=0)
             fold_button.place(x=button_coords[0], y=button_y_coord)

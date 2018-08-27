@@ -7,7 +7,7 @@ import tkinter as tk
 from treys import Card
 
 
-img_references = []
+img_references = set()
 
 
 def main():
@@ -16,9 +16,10 @@ def main():
     root = tk.Tk()
     root.geometry("1002x743")
     root.title("Poker Table")
-    background_image = tk.PhotoImage(file="./resources/table.png")
-    background_label = tk.Label(root, image=background_image)
-    background_label.place(x=0, y=0)
+    # background_image = tk.PhotoImage(file="./resources/table.png")
+    # background_label = tk.Label(root, image=background_image)
+    # background_label.place(x=0, y=0)
+    root.protocol("WM_DELETE_WINDOW", on_closing)
 
     connect_to_server()
 
@@ -56,16 +57,44 @@ def receive():
             if msg[0:3] == "mpn":
                 my_player_num = int(msg[3])
             else:
-                img_references.clear()
+                # img_references.clear()
+                # for widget in root.winfo_children():
+                    # TODO: FIX
+                    # if not widget.image = background_image
+                        # widget.destroy()
                 table = eval(msg)
                 draw(root, table)
         except OSError:  # Possibly client has left the chat.
             break
 
 
+# def send(event=None):  # event is passed by binders.
+#     """Handles sending of messages."""
+#     msg = my_msg.get()
+#     my_msg.set("")  # Clears input field.
+#     client_socket.send(bytes(msg, "utf8"))
+#     if msg == "{quit}":
+#         client_socket.close()
+#         root.quit()
+
+
+def on_closing(event=None):
+    """This function is to be called when the window is closed."""
+    client_socket.send(bytes("lea"+str(my_player_num), "utf8"))
+    client_socket.close()
+    root.quit()
+
+
 ### TKINTER ###
 
 def draw(window, table):
+    # Draw background
+    background_image = tk.PhotoImage(file="./resources/table.png")
+    background_label = tk.Label(root, image=background_image)
+    background_label.place(x=0, y=0)
+    background_label.image = background_image
+    img_references.add(background_image)
+
     # Hard-coded hole card coords
     card_coords = [[442, 531], [70, 400], [70, 164], [442, 33], [814, 164], [814, 400]]
     # Hard-coded player label coordinates
@@ -96,8 +125,8 @@ def draw(window, table):
                 card1_img = tk.PhotoImage(file="./resources/cards-png/back.png")
             cards_canvas.create_image(0, 0, image=card0_img, anchor=tk.NW)
             cards_canvas.create_image(59, 0, image=card1_img, anchor=tk.NW)
-            img_references.append(card0_img)
-            img_references.append(card1_img)
+            img_references.add(card0_img)
+            img_references.add(card1_img)
 
             # Draw bets (if the player(s) bet)
             if not players[player_iter].current_bet == 0:
@@ -112,7 +141,7 @@ def draw(window, table):
         player_label_canvas.create_image(0, 0, image=player_label_img, anchor=tk.NW)
         player_label_canvas.create_text(23, 21, text=str(player_iter), font=("Arial", "16"), fill="white")
         player_label_canvas.create_text(92, 21, text=players[player_iter].stack, font=("Arial", "16"), fill="white")
-        img_references.append(player_label_img)
+        img_references.add(player_label_img)
 
     # Draw dealer button
     if not table.cfg["button_pos"] is None:
@@ -120,7 +149,7 @@ def draw(window, table):
         button_label = tk.Label(window, image=button_img, padx=0, pady=0, bd=0, highlightthickness=0)
         adjusted_button_pos = (table.cfg["button_pos"] + len(players) - my_player_num) % len(players)
         button_label.place(x=button_coords[adjusted_button_pos][0], y=button_coords[adjusted_button_pos][1])
-        img_references.append(button_img)
+        img_references.add(button_img)
 
 
 if __name__ == '__main__':

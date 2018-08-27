@@ -78,6 +78,7 @@ class PokerTable:
         self.cfg["players"][player_pos].stack -= bet
         self.cfg["pot"]+= bet
 
+
     def is_full(self):
         return self.cfg["players_at_table"] >= len(self.cfg["players"])
     
@@ -91,6 +92,13 @@ class PokerTable:
             self.cfg["players"][rand_pos] = new_player
             self.cfg["players_at_table"] += 1
             return rand_pos
+    
+
+    def remove_player(self, player_num):
+        """Removes the player in the given position"""
+        self.cfg["players"][player_num] = None
+        self.cfg["players_at_table"] -= 1
+        # TODO: check if hand is over
     
     ### HELPERS ########################
 

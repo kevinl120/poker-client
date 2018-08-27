@@ -49,7 +49,6 @@ def handle_client(client):  # Takes client socket as argument.
         if msg.decode("utf8")[0:3] != "lea":
             broadcast(msg)
         else:
-            # client.send(bytes("{quit}", "utf8"))
             client.close()
             print("%s:%s has disconnected." % addresses[client])
             del addresses[client]

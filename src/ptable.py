@@ -65,11 +65,9 @@ class PokerTable:
                 player.hole_cards = self.cfg["deck"].draw(2)
         
         # Set blinds and start betting round
-        sb_pos = self.next_player(self.cfg["button_pos"])
-        bb_pos = self.next_player(sb_pos)
-        self.add_player_bet(sb_pos, self.cfg["sb"])
-        self.add_player_bet(bb_pos, self.cfg["bb"])
-        self.cfg["current_turn"] = self.next_player(bb_pos)
+        self.cfg["current_turn"] = self.next_active_player(self.cfg["button_pos"])
+        self.add_player_bet(self.cfg["current_turn"], self.cfg["sb"])
+        self.add_player_bet(self.cfg["current_turn"], self.cfg["bb"])
 
 
     def add_player_bet(self, player_pos, bet):
@@ -77,6 +75,7 @@ class PokerTable:
         self.cfg["players"][player_pos].current_bet = bet
         self.cfg["players"][player_pos].stack -= bet
         self.cfg["pot"]+= bet
+        self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
 
 
     def is_full(self):
@@ -99,7 +98,8 @@ class PokerTable:
         self.cfg["players"][player_num] = None
         self.cfg["players_at_table"] -= 1
         # TODO: check if hand is over
-    
+
+
     ### HELPERS ########################
 
     def next_player(self, pos):
@@ -108,6 +108,7 @@ class PokerTable:
         while self.cfg["players"][pos] is None:
             pos = (pos + 1) % len(self.cfg["players"])
         return pos
+
 
     def next_active_player(self, pos):
         """Returns the table position of the next player with a hand at table"""
@@ -118,10 +119,12 @@ class PokerTable:
 
 
 class Player:
-    def __init__(self, stack, hole_cards=None, current_bet=0):
+    def __init__(self, stack, hole_cards=None, current_bet=0, possible_actions=None):
         self.stack = stack
         self.hole_cards = hole_cards
         self.current_bet = current_bet
+        if possible_actions is None:
+            self.possible_actions = []
     
 
     def __repr__(self):

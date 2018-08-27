@@ -16,9 +16,6 @@ def main():
     root = tk.Tk()
     root.geometry("1002x743")
     root.title("Poker Table")
-    # background_image = tk.PhotoImage(file="./resources/table.png")
-    # background_label = tk.Label(root, image=background_image)
-    # background_label.place(x=0, y=0)
     root.protocol("WM_DELETE_WINDOW", on_closing)
 
     connect_to_server()
@@ -57,11 +54,6 @@ def receive():
             if msg[0:3] == "mpn":
                 my_player_num = int(msg[3])
             else:
-                # img_references.clear()
-                # for widget in root.winfo_children():
-                    # TODO: FIX
-                    # if not widget.image = background_image
-                        # widget.destroy()
                 table = eval(msg)
                 draw(root, table)
         except OSError:  # Possibly client has left the chat.

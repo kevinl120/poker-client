@@ -53,6 +53,8 @@ def receive():
             print(msg)
             if msg[0:3] == "mpn":
                 my_player_num = int(msg[3])
+            elif msg == "new":
+                img_references.clear()
             elif msg[0:3] == "Pok":
                 table = eval(msg)
                 draw(root, table)

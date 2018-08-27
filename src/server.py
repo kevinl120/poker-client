@@ -90,6 +90,7 @@ def perf_action(msg):
     if table.cfg["end_of_hand"]:
         broadcast(bytes(str(table),"utf8"))
         time.sleep(2)
+        broadcast(bytes("new","utf8"))
         table.start_new_hand()
     
 

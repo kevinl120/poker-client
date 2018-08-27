@@ -25,6 +25,10 @@ class PokerTable:
         default_cfg["pot"] = 0 # required for drawing
         default_cfg["side_pots"] = {} # required for drawing
 
+        ### Helpers in a hand
+        default_cfg["bet_to_match"] = None # highest bet on a street
+        default_cfg["last_bet"] = None # Size of last bet/raise
+
         # overwrite default cfg with new cfg
         self.cfg = dict(default_cfg, **cfg)
 
@@ -94,6 +98,13 @@ class PokerTable:
         """Returns the table position of the next player at table"""
         pos = (pos + 1) % len(self.cfg["players"])
         while self.cfg["players"][pos] is None:
+            pos = (pos + 1) % len(self.cfg["players"])
+        return pos
+
+    def next_active_player(self, pos):
+        """Returns the table position of the next player with a hand at table"""
+        pos = (pos + 1) % len(self.cfg["players"])
+        while self.cfg["players"][pos] is None or self.cfg["players"][pos].hole_cards is None:
             pos = (pos + 1) % len(self.cfg["players"])
         return pos
 

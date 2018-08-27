@@ -146,6 +146,11 @@ class PokerTable:
             self.get_player_options()
 
 
+    def player_calls(self, player_pos):
+        if player_pos == self.cfg["current_turn"]:
+            self.add_player_bet(player_pos, self.cfg["total_to_call"]-self.cfg["players"][player_pos].current_bet)
+
+
     def add_player_bet(self, player_pos, bet):
         """Make player in player_pos bet with size bet"""
         if player_pos == self.cfg["current_turn"]:

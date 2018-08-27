@@ -52,7 +52,7 @@ def receive():
             print(msg)
             if msg[0:3] == "mpn":
                 my_player_num = int(msg[3])
-            else:
+            elif msg[0:3] == "Pok":
                 table = eval(msg)
                 draw(root, table)
         except OSError:  # Possibly client has left the chat.
@@ -67,6 +67,11 @@ def receive():
 #     if msg == "{quit}":
 #         client_socket.close()
 #         root.quit()
+
+def send(msg):
+    """Handles sending of messages."""
+    client_socket.send(bytes(msg, "utf8"))
+
 
 
 def on_closing(event=None):
@@ -160,7 +165,7 @@ def draw(window, table):
             if table.cfg["players"][my_player_num].possible_actions[1] == "check":
                 # Actions are fold/check/bet
                 check_button_img = tk.PhotoImage(file="./resources/check_button.png")
-                check_button = tk.Button(window, image=check_button_img, bd=0, highlightthickness=0)
+                check_button = tk.Button(window, image=check_button_img, command=check_callback, bd=0, highlightthickness=0)
                 check_button.place(x=button_coords[1], y=button_y_coord)
                 img_references.add(check_button_img)
                 bet_button_img = tk.PhotoImage(file="./resources/bet_button.png")
@@ -170,7 +175,7 @@ def draw(window, table):
             else:
                 # Actions are fold/call/raise
                 call_button_img = tk.PhotoImage(file="./resources/call_button.png")
-                call_button = tk.Button(window, image=call_button_img, bd=0, highlightthickness=0)
+                call_button = tk.Button(window, image=call_button_img, command=call_callback, bd=0, highlightthickness=0)
                 call_button.place(x=button_coords[1], y=button_y_coord)
                 img_references.add(call_button_img)
                 raise_button_img = tk.PhotoImage(file="./resources/raise_button.png")
@@ -178,7 +183,7 @@ def draw(window, table):
                 raise_button.place(x=button_coords[2], y=button_y_coord)
                 img_references.add(raise_button_img)
             fold_button_img = tk.PhotoImage(file="./resources/fold_button.png")
-            fold_button = tk.Button(window, image=fold_button_img, bd=0, highlightthickness=0)
+            fold_button = tk.Button(window, image=fold_button_img, command=fold_callback, bd=0, highlightthickness=0)
             fold_button.place(x=button_coords[0], y=button_y_coord)
             img_references.add(fold_button_img)
         else:
@@ -192,6 +197,15 @@ def draw(window, table):
             muck_button.place(x=button_coords[1], y=button_y_coord)
             img_references.add(muck_button_img)
 
+
+def fold_callback():
+    send(str(my_player_num)+"fld")
+
+def check_callback():
+    send(str(my_player_num)+"chk")
+
+def call_callback():
+    send(str(my_player_num)+"cal")
 
 if __name__ == '__main__':
     main()

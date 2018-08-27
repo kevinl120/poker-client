@@ -16,7 +16,7 @@ ADDR = (HOST, PORT)
 SERVER = socket(AF_INET, SOCK_STREAM)
 SERVER.bind(ADDR)
 
-table = ptable.PokerTable({"sb": 0.01, "bb": 0.02})
+table = ptable.PokerTable({"sb": 1, "bb": 2})
 
 
 def main():
@@ -34,7 +34,7 @@ def accept_incoming_connections():
         client, client_address = SERVER.accept()
         print("%s:%s has connected." % client_address)
         addresses[client] = client_address
-        client.send(bytes("mpn"+str(table.add_player(ptable.Player(2))), "utf8"))
+        client.send(bytes("mpn"+str(table.add_player(ptable.Player(200))), "utf8"))
         time.sleep(0.1) # Sleep because mpn and table sometimes send together
         if table.cfg["players_at_table"] == 2:
             table.start()
@@ -47,7 +47,11 @@ def handle_client(client):  # Takes client socket as argument.
     while True:
         msg = client.recv(BUFSIZ)
         if msg.decode("utf8")[0:3] != "lea":
-            broadcast(msg)
+            msg = msg.decode("utf8")
+            print(msg)
+            if msg[0].isnumeric():
+                perf_action(msg)
+                broadcast(bytes(str(table),"utf8"))
         else:
             client.close()
             print("%s:%s has disconnected." % addresses[client])
@@ -63,6 +67,22 @@ def broadcast(msg, prefix=""):
     for sock in addresses:
         sock.send(bytes(prefix, "utf8")+msg)
 
+
+def perf_action(msg):
+    """Converts action string into specified action"""
+    player_pos = int(msg[0])
+    action = msg[1:4]
+    
+    if action == "fld": # fold
+        table.player_folds(player_pos)
+    elif action == "chk": # check
+        table.player_checks(player_pos)
+    elif action == "cal": # call
+        table.player_calls(player_pos)
+    elif action == "bet": # bet
+        bet = int(msg[4:])
+        table.add_player_bet(player_pos, bet)
+    
 
 if __name__ == '__main__':
     main()

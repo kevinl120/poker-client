@@ -83,6 +83,16 @@ def on_closing(event=None):
 
 ### TKINTER ###
 
+def fold_callback():
+    send(str(my_player_num)+"fld")
+
+def check_callback():
+    send(str(my_player_num)+"chk")
+
+def call_callback():
+    send(str(my_player_num)+"cal")
+
+
 def draw(window, table):
     # Draw background
     background_image = tk.PhotoImage(file="./resources/table.png")
@@ -196,16 +206,12 @@ def draw(window, table):
             muck_button = tk.Button(window, image=muck_button_img, bd=0, highlightthickness=0)
             muck_button.place(x=button_coords[1], y=button_y_coord)
             img_references.add(muck_button_img)
+            
+    # Draw pot
+    pot_canvas = tk.Canvas(window, width=100, height=22, bg="#1F922A", bd=0, highlightthickness=0)
+    pot_canvas.place(x=500, y=385, anchor=tk.CENTER)
+    pot_canvas.create_text(50, 11, text="Pot: "+str(table.cfg["pot"]), font=("Arial", "18"), fill="white")
 
-
-def fold_callback():
-    send(str(my_player_num)+"fld")
-
-def check_callback():
-    send(str(my_player_num)+"chk")
-
-def call_callback():
-    send(str(my_player_num)+"cal")
 
 if __name__ == '__main__':
     main()

@@ -79,7 +79,7 @@ class PokerTable:
     
 
     def get_player_options(self):
-        """Plays out the current street"""
+        """Details current player actions"""
         if self.cfg["current_turn"] == self.cfg["last_raiser"]:
             # Everyone checked/called
             # Set all bets to 0
@@ -92,12 +92,10 @@ class PokerTable:
                 pass
             elif len(self.cfg["board"]) == 4:
                 # Deal river
-                cards = self.cfg["deck"].draw(1)
-                self.cfg["board"].append(cards[0])
+                self.cfg["board"].append(self.cfg["deck"].draw(1))
             elif len(self.cfg["board"]) == 3:
                 # Deal turn
-                cards = self.cfg["deck"].draw(1)
-                self.cfg["board"].append(cards[0])
+                self.cfg["board"].append(self.cfg["deck"].draw(1))
             elif len(self.cfg["board"]) == 0:
                 # Deal flop
                 cards = self.cfg["deck"].draw(3)
@@ -107,15 +105,17 @@ class PokerTable:
             self.cfg["last_raise_size"] = self.cfg["bb"]
             self.cfg["total_to_call"] = 0
             self.cfg["current_turn"] = self.next_active_player(self.cfg["button_pos"])
-            self.cfg["last_raiser"] = self.last_active_player(self.cfg["current_turn"])
-            self.get_player_options()
-        elif self.cfg["total_to_call"] == self.cfg["players"][self.cfg["current_turn"]].current_bet:
+            self.cfg["last_raiser"] = self.cfg["current_turn"]
+
+        if self.cfg["total_to_call"] == self.cfg["players"][self.cfg["current_turn"]].current_bet:
             # Player has option of checking
             self.cfg["players"][self.cfg["current_turn"]].possible_actions = ["fold", "check", [min(self.cfg["last_raise_size"], self.cfg["players"][self.cfg["current_turn"]].stack), self.cfg["players"][self.cfg["current_turn"]].stack]]
+            return
         else:
             # Player is facing a raise
             # TODO: if player is facing all in, create side pot
             self.cfg["players"][self.cfg["current_turn"]].possible_actions = ["fold", "call", [min(self.cfg["last_raise_size"]+self.cfg["total_to_call"], self.cfg["players"][self.cfg["current_turn"]].stack), self.cfg["players"][self.cfg["current_turn"]].stack]]
+            return
 
 
     def player_folds(self, player_pos):

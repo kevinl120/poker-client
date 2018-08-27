@@ -157,7 +157,10 @@ def draw(window, table):
         # Draw player labels
         player_label_canvas = tk.Canvas(window, width=164, height=44, bd=0, highlightthickness=0)
         player_label_canvas.place(x=label_coords[x][0], y=label_coords[x][1])
-        player_label_img = tk.PhotoImage(file="./resources/player_label.png")
+        if table.cfg["current_turn"] == player_iter:
+            player_label_img = tk.PhotoImage(file="./resources/current_player_label.png")
+        else: 
+            player_label_img = tk.PhotoImage(file="./resources/player_label.png")
         player_label_canvas.create_image(0, 0, image=player_label_img, anchor=tk.NW)
         player_label_canvas.create_text(23, 21, text=str(player_iter), font=("Arial", "16"), fill="white")
         player_label_canvas.create_text(92, 21, text=players[player_iter].stack, font=("Arial", "16"), fill="white")

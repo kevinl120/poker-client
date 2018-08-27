@@ -56,11 +56,11 @@ def receive():
             if msg[0:3] == "mpn":
                 my_player_num = int(msg[3])
             else:
+                img_references.clear()
                 table = eval(msg)
                 draw(root, table)
         except OSError:  # Possibly client has left the chat.
             break
-
 
 
 ### TKINTER ###
@@ -72,6 +72,8 @@ def draw(window, table):
     label_coords = [[419, 575], [47, 444], [47, 208], [419, 77], [791, 208], [791, 444]]
     # Hard-coded bet coordinates
     bet_coords = [[460, 465], [220, 391], [220, 226], [461, 163], [700, 226], [700, 391]]
+    # Hard-coded button coordinates
+    button_coords = [[582, 525], [220, 470], [175, 261], [380, 106], [762, 170], [790, 357]]
 
     # Draw players and hole cards
     players = table.cfg["players"]
@@ -111,7 +113,14 @@ def draw(window, table):
         player_label_canvas.create_text(23, 21, text=str(player_iter), font=("Arial", "16"), fill="white")
         player_label_canvas.create_text(92, 21, text=players[player_iter].stack, font=("Arial", "16"), fill="white")
         img_references.append(player_label_img)
-    
+
+    # Draw dealer button
+    if not table.cfg["button_pos"] is None:
+        button_img = tk.PhotoImage(file="./resources/dealer_button.png")
+        button_label = tk.Label(window, image=button_img, padx=0, pady=0, bd=0, highlightthickness=0)
+        adjusted_button_pos = (table.cfg["button_pos"] + len(players) - my_player_num) % len(players)
+        button_label.place(x=button_coords[adjusted_button_pos][0], y=button_coords[adjusted_button_pos][1])
+        img_references.append(button_img)
 
 
 if __name__ == '__main__':

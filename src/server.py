@@ -3,6 +3,8 @@ import ptable
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 
+import time
+
 
 addresses = {}
 
@@ -33,6 +35,7 @@ def accept_incoming_connections():
         print("%s:%s has connected." % client_address)
         addresses[client] = client_address
         client.send(bytes("mpn"+str(table.add_player(ptable.Player(2))), "utf8"))
+        time.sleep(0.1) # Sleep because mpn and table sometimes send together
         if table.cfg["players_at_table"] > 1:
             table.start()
         broadcast(bytes(str(table),"utf8"))
@@ -41,7 +44,6 @@ def accept_incoming_connections():
 
 def handle_client(client):  # Takes client socket as argument.
     """Handles a single client connection."""
-
     while True:
         msg = client.recv(BUFSIZ)
         if msg != bytes("{quit}", "utf8"):

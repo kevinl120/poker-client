@@ -150,14 +150,47 @@ def draw(window, table):
         c_card_label = tk.Label(window, image=c_card_img, padx=0, pady=0, bd=0, highlightthickness=0)
         c_card_label.place(x=c_card_coords[x], y=c_card_y_coord)
         img_references.add(c_card_img)
-
-
-    c_cards_canvas = tk.Canvas(window, width=328, height=86, bd=0, highlightthickness=0)
-    c_cards_canvas.place(x=336, y=282)
-    for x, card in enumerate(table.cfg["board"]):
-        c_card_img = tk.PhotoImage(file="./resources/cards-png/"+Card.int_to_str(card)+".png")
-        c_cards_canvas.create_image(67*x, 0, image=c_card_img, anchor=tk.NW)
-        img_references.add(c_card_img)
+    
+    # Draw buttons if it is your turn
+    if table.cfg["current_turn"] == my_player_num:
+        # Hard-coded button coords
+        button_coords = [22, 158, 294]
+        button_y_coord = 678
+        if len(table.cfg["players"][my_player_num].possible_actions) == 3:
+            if table.cfg["players"][my_player_num].possible_actions[1] == "check":
+                # Actions are fold/check/bet
+                check_button_img = tk.PhotoImage(file="./resources/check_button.png")
+                check_button = tk.Button(window, image=check_button_img, bd=0, highlightthickness=0)
+                check_button.place(x=button_coords[1], y=button_y_coord)
+                img_references.add(check_button_img)
+                bet_button_img = tk.PhotoImage(file="./resources/bet_button.png")
+                bet_button = tk.Button(window, image=bet_button_img, bd=0, highlightthickness=0)
+                bet_button.place(x=button_coords[2], y=button_y_coord)
+                img_references.add(bet_button_img)
+            else:
+                # Actions are fold/call/raise
+                call_button_img = tk.PhotoImage(file="./resources/call_button.png")
+                call_button = tk.Button(window, image=call_button_img, bd=0, highlightthickness=0)
+                call_button.place(x=button_coords[1], y=button_y_coord)
+                img_references.add(call_button_img)
+                raise_button_img = tk.PhotoImage(file="./resources/raise_button.png")
+                raise_button = tk.Button(window, image=raise_button_img, bd=0, highlightthickness=0)
+                raise_button.place(x=button_coords[2], y=button_y_coord)
+                img_references.add(raise_button_img)
+            fold_button_img = tk.PhotoImage(file="./resources/fold_button.png")
+            fold_button = tk.Button(window, image=fold_button_img, bd=0, highlightthickness=0)
+            fold_button.place(x=button_coords[0], y=button_y_coord)
+            img_references.add(fold_button_img)
+        else:
+            # Actions are show or muck
+            show_button_img = tk.PhotoImage(file="./resources/show_button.png")
+            show_button = tk.Button(window, image=call_button_img, bd=0, highlightthickness=0)
+            show_button.place(x=button_coords[0], y=button_y_coord)
+            img_references.add(show_button_img)
+            muck_button_img = tk.PhotoImage(file="./resources/muck_button.png")
+            muck_button = tk.Button(window, image=muck_button_img, bd=0, highlightthickness=0)
+            muck_button.place(x=button_coords[1], y=button_y_coord)
+            img_references.add(muck_button_img)
 
 
 if __name__ == '__main__':

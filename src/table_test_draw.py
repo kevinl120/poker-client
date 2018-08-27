@@ -67,3 +67,12 @@ def draw(window, table, my_player_num, img_references):
         adjusted_button_pos = (table.cfg["button_pos"] + len(players) - my_player_num) % len(players)
         button_label.place(x=button_coords[adjusted_button_pos][0], y=button_coords[adjusted_button_pos][1])
         img_references.add(button_img)
+
+    # Draw community cards
+    c_card_coords = [336, 403, 470, 538, 605] # x-coords only. y-coords are all same
+    c_card_y_coord = 282
+    for x, card in enumerate(table.cfg["board"]):
+        c_card_img = tk.PhotoImage(file="./resources/cards-png/"+Card.int_to_str(card)+".png")
+        c_card_label = tk.Label(window, image=c_card_img, padx=0, pady=0, bd=0, highlightthickness=0)
+        c_card_label.place(x=c_card_coords[x], y=c_card_y_coord)
+        img_references.add(c_card_img)

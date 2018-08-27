@@ -142,6 +142,23 @@ def draw(window, table):
         button_label.place(x=button_coords[adjusted_button_pos][0], y=button_coords[adjusted_button_pos][1])
         img_references.add(button_img)
 
+    # Draw community cards
+    c_card_coords = [336, 403, 470, 538, 605] # x-coords only. y-coords are all same
+    c_card_y_coord = 282
+    for x, card in enumerate(table.cfg["board"]):
+        c_card_img = tk.PhotoImage(file="./resources/cards-png/"+Card.int_to_str(card)+".png")
+        c_card_label = tk.Label(window, image=c_card_img, padx=0, pady=0, bd=0, highlightthickness=0)
+        c_card_label.place(x=c_card_coords[x], y=c_card_y_coord)
+        img_references.add(c_card_img)
+
+
+    c_cards_canvas = tk.Canvas(window, width=328, height=86, bd=0, highlightthickness=0)
+    c_cards_canvas.place(x=336, y=282)
+    for x, card in enumerate(table.cfg["board"]):
+        c_card_img = tk.PhotoImage(file="./resources/cards-png/"+Card.int_to_str(card)+".png")
+        c_cards_canvas.create_image(67*x, 0, image=c_card_img, anchor=tk.NW)
+        img_references.add(c_card_img)
+
 
 if __name__ == '__main__':
     main()

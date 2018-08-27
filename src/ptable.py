@@ -92,14 +92,18 @@ class PokerTable:
                 pass
             elif len(self.cfg["board"]) == 4:
                 # Deal river
-                self.cfg["board"].append(self.cfg["deck"].draw(1))
+                cards = self.cfg["deck"].draw(1)
+                self.cfg["board"].append(cards[0])
             elif len(self.cfg["board"]) == 3:
                 # Deal turn
-                self.cfg["board"].append(self.cfg["deck"].draw(1))
-                pass
+                cards = self.cfg["deck"].draw(1)
+                self.cfg["board"].append(cards[0])
             elif len(self.cfg["board"]) == 0:
                 # Deal flop
-                self.cfg["board"].append(self.cfg["deck"].draw(3))
+                cards = self.cfg["deck"].draw(3)
+                self.cfg["board"].append(cards[0])
+                self.cfg["board"].append(cards[1])
+                self.cfg["board"].append(cards[2])
             self.cfg["last_raise_size"] = self.cfg["bb"]
             self.cfg["total_to_call"] = 0
             self.cfg["current_turn"] = self.next_active_player(self.cfg["button_pos"])

@@ -18,8 +18,8 @@ def draw(window, table, my_player_num, img_references):
     label_coords = [[419, 575], [47, 444], [47, 208], [419, 77], [791, 208], [791, 444]]
     # Hard-coded bet coordinates
     bet_coords = [[460, 465], [220, 391], [220, 226], [461, 163], [700, 226], [700, 391]]
-    # Hard-coded dealer button coordinates
-    d_button_coords = [[582, 525], [220, 470], [175, 261], [380, 106], [762, 170], [790, 357]]
+    # Hard-coded button coordinates
+    button_coords = [[582, 525], [220, 470], [175, 261], [380, 106], [762, 170], [790, 357]]
 
     # Draw players and hole cards
     players = table.cfg["players"]
@@ -28,7 +28,7 @@ def draw(window, table, my_player_num, img_references):
         player_iter = (x+my_player_num)%len(players)
 
         if players[player_iter] is None:
-            # If no player at table, skip this spot
+            # If no player at this position, skip it
             continue
         elif not players[player_iter].hole_cards is None:
             # Draw hole cards
@@ -65,7 +65,7 @@ def draw(window, table, my_player_num, img_references):
         button_img = tk.PhotoImage(file="./resources/dealer_button.png")
         button_label = tk.Label(window, image=button_img, padx=0, pady=0, bd=0, highlightthickness=0)
         adjusted_button_pos = (table.cfg["button_pos"] + len(players) - my_player_num) % len(players)
-        button_label.place(x=d_button_coords[adjusted_button_pos][0], y=d_button_coords[adjusted_button_pos][1])
+        button_label.place(x=button_coords[adjusted_button_pos][0], y=button_coords[adjusted_button_pos][1])
         img_references.add(button_img)
 
     # Draw community cards
@@ -76,7 +76,7 @@ def draw(window, table, my_player_num, img_references):
         c_card_label = tk.Label(window, image=c_card_img, padx=0, pady=0, bd=0, highlightthickness=0)
         c_card_label.place(x=c_card_coords[x], y=c_card_y_coord)
         img_references.add(c_card_img)
-
+    
     # Draw buttons if it is your turn
     if table.cfg["current_turn"] == my_player_num:
         # Hard-coded button coords
@@ -86,11 +86,11 @@ def draw(window, table, my_player_num, img_references):
             if table.cfg["players"][my_player_num].possible_actions[1] == "check":
                 # Actions are fold/check/bet
                 check_button_img = tk.PhotoImage(file="./resources/check_button.png")
-                check_button = tk.Button(window, image=check_button_img, bd=0, highlightthickness=0)
+                check_button = tk.Button(window, image=check_button_img, command=check_callback, bd=0, highlightthickness=0)
                 check_button.place(x=button_coords[1], y=button_y_coord)
                 img_references.add(check_button_img)
                 bet_button_img = tk.PhotoImage(file="./resources/bet_button.png")
-                bet_button = tk.Button(window, image=bet_button_img, bd=0, highlightthickness=0)
+                bet_button = tk.Button(window, image=bet_button_img, command=bet_callback, bd=0, highlightthickness=0)
                 bet_button.place(x=button_coords[2], y=button_y_coord)
                 img_references.add(bet_button_img)
             else:
@@ -103,11 +103,16 @@ def draw(window, table, my_player_num, img_references):
                 raise_button = tk.Button(window, image=raise_button_img, bd=0, highlightthickness=0)
                 raise_button.place(x=button_coords[2], y=button_y_coord)
                 img_references.add(raise_button_img)
+
+            # Draw bet amount entry field
+            entry_field = tk.Entry(window, textvariable=bet_entry, validate="focusin", validatecommand="bet_is_valid")
+            entry_field.place(x=600, y=685)
+
             fold_button_img = tk.PhotoImage(file="./resources/fold_button.png")
             fold_button = tk.Button(window, image=fold_button_img, bd=0, highlightthickness=0)
             fold_button.place(x=button_coords[0], y=button_y_coord)
             img_references.add(fold_button_img)
-        else:
+        elif len(table.cfg["players"][my_player_num].possible_actions) == 2:
             # Actions are show or muck
             show_button_img = tk.PhotoImage(file="./resources/show_button.png")
             show_button = tk.Button(window, image=show_button_img, bd=0, highlightthickness=0)
@@ -117,7 +122,7 @@ def draw(window, table, my_player_num, img_references):
             muck_button = tk.Button(window, image=muck_button_img, bd=0, highlightthickness=0)
             muck_button.place(x=button_coords[0], y=button_y_coord)
             img_references.add(muck_button_img)
-    
+            
     # Draw pot
     pot_canvas = tk.Canvas(window, width=100, height=22, bg="#1F922A", bd=0, highlightthickness=0)
     pot_canvas.place(x=500, y=385, anchor=tk.CENTER)

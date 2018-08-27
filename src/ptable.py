@@ -229,7 +229,7 @@ class PokerTable:
             self.cfg["players"][self.cfg["current_turn"]].hole_cards = None
             self.cfg["players_in_hand"] -= 1
             self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
-            self.cfg["players"][self.cfg["current_turn"]].possible_actions = ["show, muck"]
+            self.cfg["players"][self.cfg["current_turn"]].possible_actions = ["show", "muck"]
     
 
     def prepare_showdown(self):

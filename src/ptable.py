@@ -2,6 +2,8 @@ from random import randint
 import tkinter as tk
 import treys
 
+# TODO: Make exception for heads up order
+
 class PokerTable:
 
     evaluator = treys.Evaluator()
@@ -69,13 +71,16 @@ class PokerTable:
         
         # Set blinds and start betting round
         self.cfg["current_turn"] = self.next_active_player(self.cfg["button_pos"])
+        self.cfg["total_to_call"] = 0
         self.add_player_bet(self.cfg["current_turn"], self.cfg["sb"])
         self.cfg["last_raiser"] = self.cfg["current_turn"]
         self.add_player_bet(self.cfg["current_turn"], self.cfg["bb"])
         self.cfg["last_raise_size"] = self.cfg["bb"]
-        self.cfg["total_to_call"] = self.cfg["bb"]
 
         self.get_player_options()
+
+        # Workaround because bb didn't really raise
+        self.cfg["last_raiser"] = self.cfg["current_turn"]
     
 
     def get_player_options(self):
@@ -120,15 +125,15 @@ class PokerTable:
 
     def player_folds(self, player_pos):
         if player_pos == self.cfg["current_turn"]:
-            self.cfg["players"][player_pos].hole_cards = None
-            self.cfg["players_in_hand"] -= 1
-            if self.cfg["players_in_hand"] == 1:
-                pass
+            if self.cfg["players_in_hand"] == 2:
+                self.player_wins(self.next_active_player(self.cfg["current_turn"]))
                 # TODO:
                 # Provide option for folder to show/muck hand
-                # Pay out winner
                 # Provide option for winner to show/muck hand
 
+            self.cfg["players"][player_pos].hole_cards = None
+            self.cfg["players"][player_pos].current_bet = 0
+            self.cfg["players_in_hand"] -= 1
             self.cfg["players"][player_pos].possible_actions = []
             self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
             self.get_player_options()
@@ -156,6 +161,22 @@ class PokerTable:
 
             self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
             self.get_player_options()
+
+
+    def player_wins(self, player_pos):
+        for _ in range(self.cfg["players_in_hand"]):
+            self.cfg["players"][self.cfg["current_turn"]].current_bet = 0
+            self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
+        self.cfg["players_in_hand"] = 0
+        self.cfg["players"][player_pos].stack += self.cfg["pot"]
+        self.cfg["board"] = []
+        self.cfg["pot"] = 0
+        self.cfg["side_pots"] = {}
+        self.cfg["button_pos"] = self.next_active_player(self.cfg["button_pos"])
+        self.deal()
+
+
+    ### General table functions ### 
 
 
     def is_full(self):

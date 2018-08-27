@@ -125,8 +125,11 @@ class PokerTable:
 
     def player_folds(self, player_pos):
         if player_pos == self.cfg["current_turn"]:
+            self.cfg["players"][player_pos].possible_actions = []
+
             if self.cfg["players_in_hand"] == 2:
-                self.player_wins(self.next_active_player(self.cfg["current_turn"]))
+                self.player_wins(self.next_active_player(player_pos))
+                return
                 # TODO:
                 # Provide option for folder to show/muck hand
                 # Provide option for winner to show/muck hand
@@ -134,9 +137,14 @@ class PokerTable:
             self.cfg["players"][player_pos].hole_cards = None
             self.cfg["players"][player_pos].current_bet = 0
             self.cfg["players_in_hand"] -= 1
-            self.cfg["players"][player_pos].possible_actions = []
             self.cfg["current_turn"] = self.next_active_player(self.cfg["current_turn"])
             self.get_player_options()
+
+            # Pre-flop the player who is "last_raiser" could fold
+            # Similar workaround to the one in self.draw()
+            if self.cfg["last_raiser"] == player_pos:
+                self.cfg["last_raiser"] = self.next_active_player(player_pos)
+
 
 
     def player_checks(self, player_pos):
@@ -148,6 +156,7 @@ class PokerTable:
 
     def player_calls(self, player_pos):
         if player_pos == self.cfg["current_turn"]:
+            self.cfg["players"][player_pos].possible_actions = []
             self.add_player_bet(player_pos, self.cfg["total_to_call"]-self.cfg["players"][player_pos].current_bet)
 
 

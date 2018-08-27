@@ -20,23 +20,12 @@ def main():
     table = eval(tblstr)
 
     table.player_folds(5)
-    # table.add_player_bet(5, 0.02)
-    # table.add_player_bet(0, 0.01)
-    # table.add_player_bet(1, 0.02)
+    table.player_folds(0)
+    table.player_calls(1)
+    table.player_checks(3)
 
-    # table.player_checks(0)
-    # table.player_checks(1)
-    # table.player_checks(5)
-
-    # table.player_checks(0)
-    # table.player_checks(1)
-    # table.add_player_bet(5, 0.06)
-    # table.add_player_bet(0, 0.06)
-    # table.add_player_bet(1, 0.12)
-    # table.add_player_bet(5, 0.18)
-    # table.add_player_bet(0, 1.9)
-    # table.player_folds(1)
-    # table.player_folds(5)
+    table.player_checks(1)
+    table.player_folds(3)
 
     print(table)
     tblstr = str(table)

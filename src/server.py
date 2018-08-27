@@ -48,7 +48,7 @@ def handle_client(client):  # Takes client socket as argument.
         msg = client.recv(BUFSIZ)
         if msg.decode("utf8")[0:3] != "lea":
             msg = msg.decode("utf8")
-            print(msg)
+            # print(msg)
             if msg[0].isnumeric():
                 perf_action(msg)
                 broadcast(bytes(str(table),"utf8"))

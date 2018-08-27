@@ -3,6 +3,10 @@ import tkinter as tk
 import treys
 
 # TODO: Make exception for heads up order
+# TODO: Split pots
+# TODO: All ins
+# TODO: Max bet = stack + current bet
+# TODO: Fold-->show vs Call--show
 
 class PokerTable:
 
